@@ -1,0 +1,176 @@
+--WHAT is first_value() function and last_value() function
+--Use of first_value() and last_value() function
+
+create table employee(
+    emp_id int,
+    emp_name varchar(20),
+    dept_id int,
+    salary int,
+    manager_id int,
+    emp_age int
+);
+
+insert into employee values(1,'Ankit',100,10000,4,39);
+insert into employee values(2,'Mohit',100,15000,5,48);
+insert into employee values(3,'Vikas',100,10000,4,37);
+insert into employee values(4,'Rohit',100,5000,2,16);
+insert into employee values(5,'Mudit',200,12000,6,55);
+insert into employee values(6,'Agam',200,12000,2,14);
+insert into employee values(7,'Sanjay',200,9000,2,13);
+insert into employee values(8,'Ashish',200,5000,2,12);
+insert into employee values(9,'Mukesh',300,6000,6,51);
+insert into employee values(10,'Rakesh',500,7000,6,50);
+
+--FIRST_VALUE()
+ --Example 1
+ SELECT *,
+ FIRST_VALUE(emp_name) OVER(ORDER BY salary) AS "firstValue"
+ FROM employee;
+
++--------+----------+---------+--------+------------+---------+------------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | firstValue |
++--------+----------+---------+--------+------------+---------+------------+
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Rohit      |
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Rohit      |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Rohit      |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Rohit      |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Rohit      |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Rohit      |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Rohit      |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Rohit      |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Rohit      |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Rohit      |
++--------+----------+---------+--------+------------+---------+------------+
+10 rows in set (0.00 sec)
+
+Here, the first_value() function orders the salary and returns the first value that comes accoring to salary.
+You can specify any column name inside first_value() function.
+
+
+--EXAMPLE 2:
+ SELECT *,
+FIRST_VALUE(emp_name) OVER(PARTITION BY dept_id ORDER BY salary) AS 	"firstValue"
+FROM employee;
++--------+----------+---------+--------+------------+---------+------------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | firstValue |
++--------+----------+---------+--------+------------+---------+------------+
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Rohit      |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Rohit      |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Rohit      |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Rohit      |
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Ashish     |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Ashish     |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Ashish     |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Ashish     |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mukesh     |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Rakesh     |
++--------+----------+---------+--------+------------+---------+------------+
+10 rows in set (0.00 sec)
+
+--Here , the first_value() function partitions the table according to department id AND sorts the employee table according to salary as we have ORDER BY salary clause.
+
+--LAST_VALUE()
+--Example 1:
+ SELECT *,
+     LAST_VALUE(emp_name) OVER(ORDER BY emp_age) AS "lastValue"
+     FROM employee;
++--------+----------+---------+--------+------------+---------+-----------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | lastValue |
++--------+----------+---------+--------+------------+---------+-----------+
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Ashish    |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Sanjay    |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Agam      |
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Rohit     |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Vikas     |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Ankit     |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Mohit     |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Rakesh    |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mukesh    |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Mudit     |
++--------+----------+---------+--------+------------+---------+-----------+
+10 rows in set (0.00 sec)
+
+Here,we can see that the value we should get is "Mudit" but instead we are getting distinct values .
+However there is a solution for this problem , we can use "ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING" after the order by clause to get the expected result.
+Here's how..
+SELECT *,
+     LAST_VALUE(emp_name) OVER(ORDER BY emp_age ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "lastValue"
+     FROM employee;
++--------+----------+---------+--------+------------+---------+-----------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | lastValue |
++--------+----------+---------+--------+------------+---------+-----------+
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Mudit     |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Mudit     |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Mudit     |
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Mudit     |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Mudit     |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Mudit     |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Mudit     |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Mudit     |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mudit     |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Mudit     |
++--------+----------+---------+--------+------------+---------+-----------+
+10 rows in set (0.00 sec)
+
+--Example 2:
+SELECT *,
+    -> LAST_VALUE(emp_name) OVER(PARTITION BY dept_id ORDER BY emp_age ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "lastValue"
+    -> FROM employee;
++--------+----------+---------+--------+------------+---------+-----------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | lastValue |
++--------+----------+---------+--------+------------+---------+-----------+
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Mohit     |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Mohit     |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Mohit     |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Mohit     |
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Mudit     |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Mudit     |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Mudit     |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Mudit     |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mukesh    |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Rakesh    |
++--------+----------+---------+--------+------------+---------+-----------+
+10 rows in set (0.00 sec)
+Here we can see that we got the desired result after partition 
+
+--Example 3 :
+In case , we dont want to use LAST_VALUE() function as you will have to type "ROWS BETWEEN CURRENT ROW AND UNBOUNDED PRECEDING " which is time consuming and tedious.
+We can use FIRST_VALUE() and inside the over clause we can sort the column name which will give us the result we expect.
+ SELECT *,
+    -> FIRST_VALUE(emp_name) OVER(ORDER BY emp_age DESC) AS "lastValue"
+    -> FROM employee;
++--------+----------+---------+--------+------------+---------+-----------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | lastValue |
++--------+----------+---------+--------+------------+---------+-----------+
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Mudit     |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mudit     |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Mudit     |
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Mudit     |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Mudit     |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Mudit     |
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Mudit     |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Mudit     |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Mudit     |
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Mudit     |
++--------+----------+---------+--------+------------+---------+-----------+
+10 rows in set (0.00 sec)
+
+--Example 4:
+ SELECT *,
+    -> FIRST_VALUE(emp_name) OVER(PARTITION BY dept_id ORDER BY emp_age DESC) AS "lastValue"
+    -> FROM employee;
++--------+----------+---------+--------+------------+---------+-----------+
+| emp_id | emp_name | dept_id | salary | manager_id | emp_age | lastValue |
++--------+----------+---------+--------+------------+---------+-----------+
+|      2 | Mohit    |     100 |  15000 |          5 |      48 | Mohit     |
+|      1 | Ankit    |     100 |  10000 |          4 |      39 | Mohit     |
+|      3 | Vikas    |     100 |  10000 |          4 |      37 | Mohit     |
+|      4 | Rohit    |     100 |   5000 |          2 |      16 | Mohit     |
+|      5 | Mudit    |     200 |  12000 |          6 |      55 | Mudit     |
+|      6 | Agam     |     200 |  12000 |          2 |      14 | Mudit     |
+|      7 | Sanjay   |     200 |   9000 |          2 |      13 | Mudit     |
+|      8 | Ashish   |     200 |   5000 |          2 |      12 | Mudit     |
+|      9 | Mukesh   |     300 |   6000 |          6 |      51 | Mukesh    |
+|     10 | Rakesh   |     500 |   7000 |          6 |      50 | Rakesh    |
++--------+----------+---------+--------+------------+---------+-----------+
+10 rows in set (0.00 sec)   
